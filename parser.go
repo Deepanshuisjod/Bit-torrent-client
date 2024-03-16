@@ -10,6 +10,7 @@ import (
 
 // Global declaration of symbol stack array since it is used in many functions
 var symbolstack []rune
+var stringLenStack []int
 
 func readTorrentFile(fileName string) (string, error) {
 	data, err := ioutil.ReadFile(fileName)
@@ -51,9 +52,13 @@ func bencodedData(data interface{}, symbol rune) {
 	// Combine all the sandwiched values in the dictionary, list, int & string into a json type format.
 	datatype := data.(type)
 	checkSymbolStack := checkSymbolStack(symbol)
-	if checkSymbolStack == 1 {
-		var latest_symbol_inStack rune = symbolstack[len(symbolstack)-1]
+	checkFirstSymbol := symbolstack[0]
+	if checkFirstSymbol == 'd' {
+		if checkSymbolStack == 1 {
+			var latest_symbol_inStack rune = symbolstack[len(symbolstack)-1]
+		}
 	}
+
 }
 
 func distributeTypes(metaData string) {
@@ -68,8 +73,8 @@ func distributeTypes(metaData string) {
 			mp := constructMap()
 			bencodedSymbolStack(value, symbolstack)
 			bencodedData(mp, value)
-		}
-		if value_type.Name() == "int" {
+
+		} else if value_type.Name() == "int" {
 			j := i + value + 1
 			mapString := metaData[i+2 : j]
 			i = j + 1
