@@ -5,12 +5,13 @@ import (
 	"fmt"
 	"io/ioutil"
 	"reflect"
+	"strconv"
 	"strings"
 )
 
 // Global declaration of symbol stack array since it is used in many functions
 var symbolstack []rune
-var stringArray []int
+var numArray []int
 
 func readTorrentFile(fileName string) (string, error) {
 	data, err := ioutil.ReadFile(fileName)
@@ -35,7 +36,8 @@ func constructMap() map[string]interface{} {
 	return mp
 }
 func constructList() []string {
-	//
+	list := make([]string, 1)
+	return list
 }
 
 // Unless the symbol is found in symbolStack it will return 1 or else return 0
@@ -58,7 +60,7 @@ func bencodedData(data interface{}, symbol interface{}) {
 			dataMap, ok := data.(map[string]interface{})
 			if !ok {
 				if dataType.Kind() == reflect.String {
-					inStackValue, count := checkStringArray(symbol)
+					inStackValue, count := checknumArray(symbol)
 					var keyValue string
 					if count%2 != 0 {
 						keyValue = inStackValue
@@ -79,14 +81,35 @@ func distributeTypes(metaData string) {
 	// MetaData is always in bencoded-string format
 	for i := 0; i < len(metaData); i++ {
 		value := metaData[i]
-		value_type := reflect.TypeOf(value)
+		var numStr string
 
+		// For Dictionary
 		if value == 'd' {
 			mp := constructMap()
 			bencodedSymbolStack(value, symbolstack)
 			bencodedData(mp, value)
 		}
-		if value_type.Kind() == reflect.Int {
+
+		// For String
+		if value >= '0' && value <= '9' {
+			char := value
+			for char != ':' {
+				numStr += string(value)
+				i++
+				break
+			}
+			numInt, err := strconv.Atoi(numStr)
+			if err != nil {
+				panic(err)
+			}
+			numArray = append(numArray, numInt)
+			numStr = ""
+
+		}
+
+		// For List
+		if value == 'l' {
+			list := constructList()
 
 		}
 	}
